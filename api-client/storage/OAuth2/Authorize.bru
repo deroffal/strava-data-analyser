@@ -1,0 +1,17 @@
+meta {
+  name: Authorize
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{globalHost}}/oauth2/authorize?client_id={{clientId}}&response_type=code&redirect_uri=http://localhost:8080
+  body: none
+  auth: none
+}
+
+params:query {
+  client_id: {{clientId}}
+  response_type: code
+  redirect_uri: http://localhost:8080
+}

@@ -1,0 +1,36 @@
+meta {
+  name: file_write
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{euHost}}/file_write?fileid={{synchronisation_file_id}}&fd={{fd}}
+  body: text
+  auth: bearer
+}
+
+params:query {
+  fileid: {{synchronisation_file_id}}
+  fd: {{fd}}
+}
+
+headers {
+  ~Content-Length: 58
+}
+
+auth:bearer {
+  token: {{access_token_set_by_collection_script}}
+}
+
+body:json {
+  {"lastRecordedActivityDate": "2000-01-01T00:00:00.000Z4"}
+}
+
+body:text {
+  {"lastRecordedActivityDate": "2000-01-01T00:00:01Z"}
+}
+
+body:multipart-form {
+  : @file()
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Authorization
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://www.strava.com/oauth/authorize?client_id={{client_id}}&response_type=code&redirect_uri=http://localhost&approval_prompt=auto&scope=read_all,activity:read_all,profile:read_all
+  body: none
+  auth: none
+}
+
+params:query {
+  client_id: {{client_id}}
+  response_type: code
+  redirect_uri: http://localhost
+  approval_prompt: auto
+  scope: read_all,activity:read_all,profile:read_all
+}

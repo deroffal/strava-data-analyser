@@ -1,0 +1,15 @@
+meta {
+  name: activities by id
+  type: http
+  seq: 2
+}
+
+get {
+  url: https://www.strava.com/api/v3/activities/7454700738
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token_set_by_collection_script}}
+}

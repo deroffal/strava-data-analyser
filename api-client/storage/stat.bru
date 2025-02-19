@@ -1,0 +1,29 @@
+meta {
+  name: stat
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{euHost}}/stat?fileid={{synchronisation_file_id}}
+  body: none
+  auth: bearer
+}
+
+params:query {
+  fileid: {{synchronisation_file_id}}
+}
+
+auth:bearer {
+  token: {{access_token_set_by_collection_script}}
+}
+
+body:json {
+  {
+    "files": [
+      {
+        "url": "synchronisation.json"
+      }
+    ]
+  }
+}

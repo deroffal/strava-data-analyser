@@ -1,3 +1,0 @@
-= Schema generation
-
-Tool : https://www.npmjs.com/package/generate-schema

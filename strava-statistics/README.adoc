@@ -1,5 +1,0 @@
-= Strava-Statistics
-
-== ADR
-
-* link:.adr/store-plain-json.adoc[Storing plain json in database]

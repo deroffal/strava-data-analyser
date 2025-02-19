@@ -1,9 +1,10 @@
 .idea
 .tmp
+.venv
 
-*/.ipynb_checkpoints
-analysis/strava-data-analysis-env/
+__pycache__/
 
-node_modules/
+data/
 
-application-*.yaml
+.env
+/src/strava_data_analyser.egg-info/

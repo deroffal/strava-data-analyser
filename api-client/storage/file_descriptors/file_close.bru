@@ -1,0 +1,24 @@
+meta {
+  name: file_close
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{euHost}}/file_close?fileid={{synchronisation_file_id}}&fd={{fd}}
+  body: multipartForm
+  auth: bearer
+}
+
+params:query {
+  fileid: {{synchronisation_file_id}}
+  fd: {{fd}}
+}
+
+auth:bearer {
+  token: {{access_token_set_by_collection_script}}
+}
+
+body:json {
+  {"files": ""}
+}

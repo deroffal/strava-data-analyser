@@ -1,0 +1,18 @@
+meta {
+  name: Refresh token
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://www.strava.com/api/v3/oauth/token?client_id={{client_id}}&client_secret={{client_secret}}&grant_type=refresh_token&refresh_token={{refresh_token}}
+  body: none
+  auth: none
+}
+
+params:query {
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+  grant_type: refresh_token
+  refresh_token: {{refresh_token}}
+}

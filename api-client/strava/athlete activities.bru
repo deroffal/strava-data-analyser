@@ -1,0 +1,22 @@
+meta {
+  name: athlete activities
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://www.strava.com/api/v3/athlete/activities?per_page=100&after=1640991600
+  body: none
+  auth: bearer
+}
+
+params:query {
+  per_page: 100
+  after: 1640991600
+  ~before: 
+  ~page: 11
+}
+
+auth:bearer {
+  token: {{access_token_set_by_collection_script}}
+}

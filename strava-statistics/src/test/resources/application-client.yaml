@@ -1,8 +1,0 @@
-strava-statistics:
-  client:
-    api:
-      clientId: 12345
-      clientSecret: 8cf3ae6da95dda35632abc4ce34ade9fa78de0e
-      refreshToken: 3a09c939a88b7a88a26a7d05d6b44437f9eb2c0
-    settings:
-      activity-per-page: 49
