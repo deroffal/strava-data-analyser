@@ -1,7 +1,8 @@
 from . import file_loader, mongo_loader
+from pandas import DataFrame
 
 
-def load_activities(source: str, year: int = None):
+def load_activities(source: str, year: int = None) -> DataFrame:
     """
     Abstraction to load the activity data
     :param source: either 'file' for local files, or 'mongo' for mongodb database
@@ -14,7 +15,7 @@ def load_activities(source: str, year: int = None):
         return mongo_loader.find_activities(year)
 
 
-def load_detailed_activities(source: str, year: int = None, type: str = None):
+def load_detailed_activities(source: str, year: int = None, type: str = None) -> DataFrame:
     """
     Abstraction to load the detailed activity data
     :param source: either 'file' for local files, or 'mongo' for mongodb database
