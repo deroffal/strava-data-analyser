@@ -1,4 +1,4 @@
-from strava_data_analyser.storage import loader
+from strava_data_analyser.analyser import file_loader
 
 # Either a year, or None for all time activities
 selectedYear = None
@@ -10,7 +10,7 @@ selectedType = 'Swim'
 
 
 
-activities = loader.load_detailed_activities(source='file', year=selectedYear, type=selectedType)
+activities = file_loader.load_detailed_activities( year=selectedYear, type=selectedType)
 
 activities = activities[['id', 'laps', 'splits_metric', 'splits_standard']]
 

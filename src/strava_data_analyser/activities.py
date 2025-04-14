@@ -2,8 +2,8 @@ import logging
 
 from dotenv import load_dotenv
 
-from storage.storage import Storage
 from extraction.strava import Strava
+from storage.storage import Storage
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -37,4 +37,4 @@ for item in _list:
 
 last_activity_date = _list[-1]['summary']['start_date']
 logger.info(f"Last activity date is now {last_activity_date}")
-storage.update_last_activity_date(last_activity_date)
+

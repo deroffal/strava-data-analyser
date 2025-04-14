@@ -1,20 +1,17 @@
-import json
-from os import walk
-from pathlib import Path
-
 import pandas as pd
 from pandas import DataFrame
 
-activity_file_path = "../../data/summaries"
-detailed_activity_path = "../../data/details"
+from strava_data_analyser.storage.storage import Storage
+
+storage = Storage()
 
 
-def load_athlete_activities(year: int = None) -> DataFrame:
+def load_summary_activities(year: int = None) -> DataFrame:
     """
     :param year: the year requested
     :return: athlete activities as a Dataframe. Activities are filtered by year, if provided.
     """
-    activities = _read_activities_file()  # TODO filter the date here !
+    activities = _read_summary_activities_file()  # TODO filter the date here !
 
     if year is not None:
         activities = activities.loc[
@@ -38,37 +35,16 @@ def load_detailed_activities(year: int = None, type: str = None):
     return activities
 
 
-def _read_activities_file() -> DataFrame:
-    _files = _read_json_files(activity_file_path)
+def _read_summary_activities_file() -> DataFrame:
+    _files = storage.load_summary_activities()
     _summaries = pd.DataFrame.from_dict(_files)
     return _summaries
 
 
 def _read_detailed_activities_files() -> DataFrame:
-    _files = _read_json_files(detailed_activity_path)
+    _files = storage.load_detailed_activities()
     _activities = pd.DataFrame.from_dict(_files)
     return _activities
 
 
-def _read_json_files(path: str):
-    """
-    Read json files in a directory
-    :param path:
-    :return: the content of each file.
-    """
-    content = []
-    for file_name in _list_files(path):
-        txt = Path(f"{path}/{file_name}").read_text(encoding='utf-8')
-        data = json.loads(txt)
-        content.append(data)
 
-    return content
-
-
-def _list_files(directory: str):
-    """
-    List directory's files name
-    :param directory:
-    :return: Returns all files name in the directory
-    """
-    return next(walk(directory), (None, None, []))[2]
