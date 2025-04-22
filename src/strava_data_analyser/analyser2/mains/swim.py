@@ -1,4 +1,4 @@
-from strava_data_analyser.analyser import file_loader
+from strava_data_analyser.analyser2 import file_loader
 
 # Either a year, or None for all time activities
 selectedYear = None

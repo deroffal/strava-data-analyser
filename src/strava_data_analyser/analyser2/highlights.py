@@ -11,7 +11,8 @@ class Highlight:
         self.ascending_sort_order = ascending_sort_order
 
     def transform(self, df: DataFrame) -> dict:
-        highlight = df.sort_values([self.column_name], ascending=self.ascending_sort_order).iloc[0][list(set(['id', 'name', 'start_date_local', column_name]))]
+        highlight = df.sort_values([self.column_name], ascending=self.ascending_sort_order).iloc[0][list(
+            {'id', 'name', 'start_date_local', self.column_name})]
         highlight["highlight"] = self.name
         highlight["value"] = self.display_function(highlight[self.column_name])
         return highlight.to_dict()

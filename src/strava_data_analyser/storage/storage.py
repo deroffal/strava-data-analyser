@@ -11,6 +11,12 @@ class Storage:
     def __init__(self, provider=None):
         self.provider = provider if provider is not None else LocalStorageProvider()
 
+    def get_summaries_location(self):
+        return self.provider.summary_activity_file_path
+
+    def get_details_location(self):
+        return self.provider.detailed_activity_path
+
     def get_last_activity_date(self):
         activity = self.provider.get_last_activity()
         _last_activity = json.loads(activity)

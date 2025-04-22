@@ -1,7 +1,7 @@
 from pandas import DataFrame
 
-from strava_data_analyser.analyser.highlights import Highlight
-from strava_data_analyser.analyser import file_loader
+from strava_data_analyser.analyser2.highlights import Highlight
+from strava_data_analyser.analyser2 import file_loader
 from strava_data_analyser.view import data_format
 
 

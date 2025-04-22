@@ -19,17 +19,17 @@ class LocalStorageProvider:
 
     # fixme params
     def load_summary_activities(self, year: int = None):
-        return self._read_json_files_in(self.summary_activity_file_path)
+        return self._read_files_in(self.summary_activity_file_path)
 
     # fixme params
     def load_detailed_activities(self, year: int = None, type: str = None):
-        return self._read_json_files_in(self.detailed_activity_path)
+        return self._read_files_in(self.detailed_activity_path)
 
     def _write_to_location(self, name: str, data: str, location: str):
         file_path = Path(f"{location}/{name}")
         file_path.write_text(data, encoding='utf-8')
 
-    def _read_json_files_in(self, path: str):
+    def _read_files_in(self, path: str):
         """
         Read json files in a directory
         :param path:
@@ -39,8 +39,7 @@ class LocalStorageProvider:
         files = self._list_files(path)
         for file_name in files:
             txt = Path(f"{path}/{file_name}").read_text(encoding='utf-8')
-            data = json.loads(txt)
-            content.append(data)
+            content.append(txt)
 
         return content
 
