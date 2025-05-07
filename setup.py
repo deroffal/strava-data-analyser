@@ -23,9 +23,9 @@ setup(
         "pandas==2.2.3",
         "pillow==11.1.0",
         "pluggy==1.5.0",
+        "polars==1.27.1",
         "pymongo==4.11.2",
         "pyparsing==3.2.1",
-        "pytest==8.3.5",
         "python-dateutil==2.9.0.post0",
         "python-dotenv==1.0.1",
         "pytz==2025.1",
@@ -34,11 +34,11 @@ setup(
         "tomli==2.2.1",
         "tzdata==2025.1",
         "urllib3==2.3.0",
-        "zipp==3.21.0",
+        "zipp==3.21.0"
     ],
     extras_require={
         "test": [
-            "pytest"
+            "pytest==8.3.5"
         ]
     }
 )
