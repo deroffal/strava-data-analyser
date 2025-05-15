@@ -114,3 +114,51 @@ class PolarsAnalyzerActivityTest(unittest.TestCase):
             'speed': {'percentile': 33, 'rank': 3},
             'elevation': {'percentile': 100, 'rank': 1}
         })
+
+
+class PolarsAnalyzerSegmentTest(unittest.TestCase):
+
+    def test_analyse_segment_for_activity(self):
+        details = pl.DataFrame({
+            "id": [1, 2, 3, 4, 5],
+            "type": ["Run", "Run", "Run", "Run", "Run"],
+            "segment_efforts": [
+                [
+                    {'id': 11, 'segment': {'id': 1, 'name': 'segment 1'}, 'moving_time': 10},
+                    {'id': 12, 'segment': {'id': 2, 'name': 'segment 2'}, 'moving_time': 100},
+                    {'id': 13, 'segment': {'id': 3, 'name': 'segment 3'}, 'moving_time': 100}
+                ],
+                [
+                    {'id': 21, 'segment': {'id': 1, 'name': 'segment 1'}, 'moving_time': 12},
+                    {'id': 22, 'segment': {'id': 4, 'name': 'segment 4'}, 'moving_time': 100},
+                ],
+                [
+                    {'id': 31, 'segment': {'id': 1, 'name': 'segment 1'}, 'moving_time': 9},
+                    {'id': 32, 'segment': {'id': 1, 'name': 'segment 1'}, 'moving_time': 8},
+                    {'id': 33, 'segment': {'id': 1, 'name': 'segment 1'}, 'moving_time': 9},
+                    {'id': 34, 'segment': {'id': 1, 'name': 'segment 1'}, 'moving_time': 11}
+                ],
+                [
+                    {'id': 41, 'segment': {'id': 2, 'name': 'segment 2'}, 'moving_time': 100},
+                ],
+                [
+                ],
+            ],
+        })
+
+        summaries = pl.DataFrame({})
+        analyser = PolarsAnalyzer(summaries, details)
+
+        result = analyser.analyse_segment_for_activity(3, 1)
+
+        print(result)
+
+        self.assertEqual(result['count'], {
+            'overall': 6,
+            'activity': 4
+        })
+
+        self.assertEqual(result['moving_time_percentile'], {
+            'percentile': 100,
+            'rank': 1
+        })

@@ -20,7 +20,7 @@ def _get_percentile_for(_df, _column: str, _dict: dict, _order=Order.ASC) -> dic
 
 def get_statistics(_df, _activity):
     distance_percentile = _get_percentile_for(_df, "distance", _activity)
-    moving_time_percentile = _get_percentile_for(_df, "moving_time", _activity)
+    moving_time_percentile = _get_percentile_for(_df, "moving_time", _activity, Order.DESC)
     speed_percentile = _get_percentile_for(_df, "average_speed", _activity)
     elevation_percentile = _get_percentile_for(_df, "total_elevation_gain", _activity)
 
@@ -31,7 +31,6 @@ def get_statistics(_df, _activity):
         "speed": speed_percentile,
         "elevation": elevation_percentile
     }
-
 
 class PolarsAnalyzer:
     @classmethod
@@ -70,11 +69,8 @@ class PolarsAnalyzer:
             _overview['mean_distance'] = data_format.m_as_km(_overview['mean_distance'])
         return _overviews
 
-    def analyse_activity(self, _id, _start_date = datetime.date.today()):
-        _activity = (
-            self.details
-            .filter(pl.col("id") == _id)
-        ).to_dicts()[0]
+    def analyse_activity(self, _id, _start_date=datetime.date.today()):
+        _activity = self._find_activity(_id)
 
         # just on the same type (by default)
         df_type = self.details.filter(pl.col("type") == _activity['type'])
@@ -102,3 +98,62 @@ class PolarsAnalyzer:
             "yoy": yoy,
             "distance_range": distance_range
         }
+
+    def analyse_segment_for_activity(self, _activity_id, _segment_id):
+        effort_ = self._find_best_segment_effort(_activity_id, _segment_id)
+
+        explode = (self.details
+        # first filtering on activity with the correct segment
+        .filter(
+            pl.col("segment_efforts").list.eval(
+                pl.element().struct.field("segment").struct.field("id") == _segment_id
+            ).list.any()
+        )
+        # then exploding and filter on the segment efforts
+        .explode("segment_efforts")
+        .filter(pl.col("segment_efforts").struct.field("segment").struct.field("id") == _segment_id)
+        .with_columns(
+            pl.col("segment_efforts").struct.field("moving_time").alias("segment_effort_moving_time"),
+        )
+        )
+
+        moving_time_percentile = _get_percentile_for(explode,
+                                                     "segment_effort_moving_time",
+                                                     {'segment_effort_moving_time': effort_['moving_time']},
+                                                     Order.DESC
+                                                     )
+        return {
+            "count": {
+                "overall": explode.height,
+                "activity": explode.filter(pl.col("id") == _activity_id).height,
+            },
+            "moving_time_percentile": moving_time_percentile,
+        }
+
+    def _find_best_segment_effort(self, _activity_id, _segment_id):
+        """
+        Find the segment effort in the activity. If there are several efforts for the same segment, take the best one (the one with the lowest moving time).
+        :param _activity_id:
+        :param _segment_id:
+        :return:
+        """
+        _activity = self._find_activity(_activity_id)
+
+        _efforts = [
+            _effort
+            for _effort in _activity['segment_efforts']
+            if _effort['segment']['id'] == _segment_id
+        ]
+
+        if not _efforts:
+            raise ValueError(f"Segment {_segment_id} not found in activity {_activity_id}")
+
+        if _efforts.__len__() > 1:
+            print("Warning: more than one effort for the same segment. Taking the best one.")
+
+        effort_ = sorted(_efforts, key=lambda x: x['moving_time'])[0]
+        print(f"Segment {effort_['segment']['name']} (id: {effort_['segment']['id']}))")
+        return effort_
+
+    def _find_activity(self, _activity_id):
+        return self.details.filter(pl.col("id") == _activity_id).to_dicts()[0]
