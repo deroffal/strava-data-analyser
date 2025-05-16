@@ -1,38 +1,14 @@
 import datetime
-from enum import Enum
 
 import polars as pl
 from dateutil.relativedelta import relativedelta
 
+from strava_data_analyser.analyser.efforts import get_efforts_statistics
+from strava_data_analyser.analyser.statistics import _get_percentile_for, BetterWhen
 from strava_data_analyser.view import data_format
 
-Order = Enum("Order", [('ASC', 'asc'), ('DESC', 'desc')])
-
-
-def _get_percentile_for(_df, _column: str, _dict: dict, _order=Order.ASC) -> dict:
-    _filter = pl.col(_column) < _dict[_column] if _order != Order.ASC else pl.col(_column) > _dict[_column]
-    _others_matching = _df.filter(_filter).height
-    return {
-        'percentile': int(round(1 - _others_matching / _df.height, 2) * 100),
-        'rank': _others_matching + 1
-    }
-
-
-def get_statistics(_df, _activity):
-    distance_percentile = _get_percentile_for(_df, "distance", _activity)
-    moving_time_percentile = _get_percentile_for(_df, "moving_time", _activity, Order.DESC)
-    speed_percentile = _get_percentile_for(_df, "average_speed", _activity)
-    elevation_percentile = _get_percentile_for(_df, "total_elevation_gain", _activity)
-
-    return {
-        "count": _df.height,
-        "distance": distance_percentile,
-        "duration": moving_time_percentile,
-        "speed": speed_percentile,
-        "elevation": elevation_percentile
-    }
-
 class PolarsAnalyzer:
+
     @classmethod
     def from_loader(cls, _polars_loader):
         _summaries, _details = _polars_loader.load_data()
@@ -74,7 +50,7 @@ class PolarsAnalyzer:
 
         # just on the same type (by default)
         df_type = self.details.filter(pl.col("type") == _activity['type'])
-        overall = get_statistics(df_type, _activity)
+        overall = get_details_statistics(df_type, _activity)
         overall['description'] = "Overall"
 
         # for 1 year
@@ -83,7 +59,7 @@ class PolarsAnalyzer:
         df_yoy = (df_type
                   .filter(pl.col("start_date").is_between(_from, _to, 'right'))
                   )
-        yoy = get_statistics(df_yoy, _activity)
+        yoy = get_details_statistics(df_yoy, _activity)
         yoy['description'] = f"From {_from} to {_to}"
 
         # same distance range ex [10k, 15k[
@@ -91,7 +67,7 @@ class PolarsAnalyzer:
         distance_df = (df_type
                        .filter(pl.col("distance").is_between(lower, lower + 5000, 'left'))
                        )
-        distance_range = get_statistics(distance_df, _activity)
+        distance_range = get_details_statistics(distance_df, _activity)
         distance_range['description'] = f"Distance range [{lower}, {lower + 5000}["
         return {
             "overall": overall,
@@ -118,9 +94,9 @@ class PolarsAnalyzer:
         )
 
         moving_time_percentile = _get_percentile_for(explode,
-                                                     "segment_effort_moving_time",
-                                                     {'segment_effort_moving_time': effort_['moving_time']},
-                                                     Order.DESC
+                                                     pl.col('segment_effort_moving_time'),
+                                                     effort_['moving_time'],
+                                                     BetterWhen.LOW
                                                      )
         return {
             "count": {
@@ -157,3 +133,24 @@ class PolarsAnalyzer:
 
     def _find_activity(self, _activity_id):
         return self.details.filter(pl.col("id") == _activity_id).to_dicts()[0]
+
+def get_details_statistics(_details_df, _activity) -> dict:
+    """
+    Returns various statistics for a given activity
+    :param _details_df:
+    :param _activity:
+    :return:
+    """
+    distance_percentile = _get_percentile_for(_details_df, pl.col("distance"), _activity['distance'])
+    moving_time_percentile = _get_percentile_for(_details_df, pl.col("moving_time"), _activity['moving_time'])
+    speed_percentile = _get_percentile_for(_details_df, pl.col("average_speed"), _activity['average_speed'])
+    elevation_percentile = _get_percentile_for(_details_df, pl.col("total_elevation_gain"), _activity['total_elevation_gain'])
+    efforts_percentile = get_efforts_statistics(_details_df, _activity['best_efforts'])
+
+    return {
+        "distance": distance_percentile,
+        "duration": moving_time_percentile,
+        "speed": speed_percentile,
+        "elevation": elevation_percentile,
+        "best_efforts": efforts_percentile
+    }

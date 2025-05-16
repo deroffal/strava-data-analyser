@@ -79,7 +79,34 @@ class PolarsAnalyzerActivityTest(unittest.TestCase):
             "distance": [10000, 8000, 12000, 20000, 10000],
             "moving_time": [3600, 3000, 4000, 7200, 3000],
             "average_speed": [float(2.77), float(2.66), float(3), float(2.77), float(3.33)],
-            "total_elevation_gain": [100, 50, 30, 20, 0]
+            "total_elevation_gain": [100, 50, 30, 20, 0],
+            "best_efforts": [
+                [
+                    {'name': '400m', 'moving_time': 60},
+                    {'name': '800m', 'moving_time': 120},
+                    {'name': '1K', 'moving_time': 240}
+                ],
+                [
+                    {'name': '400m', 'moving_time': 50},
+                    {'name': '800m', 'moving_time': 100},
+                    {'name': '1K', 'moving_time': 200}
+                ],
+                [
+                    {'name': '400m', 'moving_time': 40},
+                    {'name': '800m', 'moving_time': 80},
+                    {'name': '1K', 'moving_time': 160}
+                ],
+                [
+                    {'name': '400m', 'moving_time': 30},
+                    {'name': '800m', 'moving_time': 60},
+                    {'name': '1K', 'moving_time': 120}
+                ],
+                [
+                    {'name': '400m', 'moving_time': 20},
+                    {'name': '800m', 'moving_time': 40},
+                    {'name': '1K', 'moving_time': 80}
+                ]
+            ]
         })
         # and empty summaries (no need of it)
         summaries = pl.DataFrame({})
@@ -91,28 +118,58 @@ class PolarsAnalyzerActivityTest(unittest.TestCase):
         # Then I expect the activity to be analysed correctly
         self.assertEqual(activity['overall'], {
             'description': 'Overall',
-            'count': 5,
-            'distance': {'percentile': 60, 'rank': 3},
-            'duration': {'percentile': 60, 'rank': 3},
-            'speed': {'percentile': 60, 'rank': 3},
-            'elevation': {'percentile': 100, 'rank': 1}
+            'distance': {'percentile': 60, 'rank': 3, 'total': 5},
+            'duration': {'percentile': 60, 'rank': 3, 'total': 5},
+            'speed': {'percentile': 60, 'rank': 3, 'total': 5},
+            'elevation': {'percentile': 100, 'rank': 1, 'total': 5},
+            'best_efforts': [
+                {'effort': {'percentile': 20, 'rank': 5, 'total': 5},
+                 'name': '400m',
+                 'value': '00:01:00'},
+                {'effort': {'percentile': 20, 'rank': 5, 'total': 5},
+                 'name': '800m',
+                 'value': '00:02:00'},
+                {'effort': {'percentile': 20, 'rank': 5, 'total': 5},
+                 'name': '1K',
+                 'value': '00:04:00'}
+            ]
         })
         self.assertEqual(activity['yoy'], {
             'description': 'From 2023-06-01 00:00:00 to 2024-06-01 00:00:00',
-            'count': 3,
-            'distance': {'percentile': 67, 'rank': 2},
-            'duration': {'percentile': 67, 'rank': 2},
-            'speed': {'percentile': 67, 'rank': 2},
-            'elevation': {'percentile': 100, 'rank': 1}
+            'distance': {'percentile': 67, 'rank': 2, 'total': 3},
+            'duration': {'percentile': 67, 'rank': 2, 'total': 3},
+            'speed': {'percentile': 67, 'rank': 2, 'total': 3},
+            'elevation': {'percentile': 100, 'rank': 1, 'total': 3},
+            'best_efforts': [
+                {'effort': {'percentile': 33, 'rank': 3, 'total': 3},
+                 'name': '400m',
+                 'value': '00:01:00'},
+                {'effort': {'percentile': 33, 'rank': 3, 'total': 3},
+                 'name': '800m',
+                 'value': '00:02:00'},
+                {'effort': {'percentile': 33, 'rank': 3, 'total': 3},
+                 'name': '1K',
+                 'value': '00:04:00'}
+            ]
         })
 
         self.assertEqual(activity['distance_range'], {
             'description': 'Distance range [10000, 15000[',
-            'count': 3,
-            'distance': {'percentile': 67, 'rank': 2},
-            'duration': {'percentile': 67, 'rank': 2},
-            'speed': {'percentile': 33, 'rank': 3},
-            'elevation': {'percentile': 100, 'rank': 1}
+            'distance': {'percentile': 67, 'rank': 2, 'total': 3},
+            'duration': {'percentile': 67, 'rank': 2, 'total': 3},
+            'speed': {'percentile': 33, 'rank': 3, 'total': 3},
+            'elevation': {'percentile': 100, 'rank': 1, 'total': 3},
+            'best_efforts': [
+                {'effort': {'percentile': 33, 'rank': 3, 'total': 3},
+                 'name': '400m',
+                 'value': '00:01:00'},
+                {'effort': {'percentile': 33, 'rank': 3, 'total': 3},
+                 'name': '800m',
+                 'value': '00:02:00'},
+                {'effort': {'percentile': 33, 'rank': 3, 'total': 3},
+                 'name': '1K',
+                 'value': '00:04:00'}
+            ]
         })
 
 
@@ -160,5 +217,6 @@ class PolarsAnalyzerSegmentTest(unittest.TestCase):
 
         self.assertEqual(result['moving_time_percentile'], {
             'percentile': 100,
-            'rank': 1
+            'rank': 1,
+            'total': 6
         })
