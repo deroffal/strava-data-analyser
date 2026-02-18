@@ -22,3 +22,6 @@ segment_id = 13680755 # (many)
 # segment_id = 28811814 # (just one)
 segment = analyzer.analyse_segment_for_activity(activity_id, segment_id)
 print(json.dumps(segment, indent=4))
+
+efforts = analyzer.list_best_efforts(top_k=10)
+print(json.dumps(efforts, indent=4))

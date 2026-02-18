@@ -7,6 +7,7 @@ from strava_data_analyser.analyser.efforts import get_efforts_statistics
 from strava_data_analyser.analyser.statistics import _get_percentile_for, BetterWhen
 from strava_data_analyser.view import data_format
 
+
 class PolarsAnalyzer:
 
     @classmethod
@@ -106,6 +107,47 @@ class PolarsAnalyzer:
             "moving_time_percentile": moving_time_percentile,
         }
 
+    def list_best_efforts(self, year: int = None, top_k: int = 3):
+        _df = (
+            self.details
+            .filter(
+                pl.col("start_date").is_between(pl.datetime(year, 1, 1), pl.datetime(year + 1, 1, 1), 'left'))
+        ) if year is not None else self.details
+        tops = (_df
+                .filter(pl.col('type') == 'Run')
+                .filter(pl.col('best_efforts') != [])
+                .explode("best_efforts")
+                .with_columns(
+            pl.col('best_efforts').struct.field('name').alias('best_efforts_name'),
+            pl.col('best_efforts').struct.field('moving_time').alias('best_efforts_moving_time'),
+        )
+                .group_by('best_efforts_name')
+                .agg(
+            pl.all().top_k_by('best_efforts_moving_time', k=top_k, reverse=True)
+        ).explode(pl.exclude("best_efforts_name"))
+                ).to_dicts()
+
+        result = dict()
+        for top in tops:
+            name_ = top['best_efforts_name']
+
+            if top['best_efforts_moving_time'] is None:
+                print(f"None for {name_}")
+                continue
+
+            if name_ in result:
+                values = result[name_]
+                values.append({
+                    'activity': top['id'],
+                    'moving_time': data_format.seconds_as_hhmmss(top['best_efforts_moving_time'])
+                })
+            else:
+                result[name_] = [{
+                    'activity': top['id'],
+                    'moving_time': data_format.seconds_as_hhmmss(top['best_efforts_moving_time'])
+                }]
+        return result
+
     def _find_best_segment_effort(self, _activity_id, _segment_id):
         """
         Find the segment effort in the activity. If there are several efforts for the same segment, take the best one (the one with the lowest moving time).
@@ -134,6 +176,7 @@ class PolarsAnalyzer:
     def _find_activity(self, _activity_id):
         return self.details.filter(pl.col("id") == _activity_id).to_dicts()[0]
 
+
 def get_details_statistics(_details_df, _activity) -> dict:
     """
     Returns various statistics for a given activity
@@ -144,7 +187,8 @@ def get_details_statistics(_details_df, _activity) -> dict:
     distance_percentile = _get_percentile_for(_details_df, pl.col("distance"), _activity['distance'])
     moving_time_percentile = _get_percentile_for(_details_df, pl.col("moving_time"), _activity['moving_time'])
     speed_percentile = _get_percentile_for(_details_df, pl.col("average_speed"), _activity['average_speed'])
-    elevation_percentile = _get_percentile_for(_details_df, pl.col("total_elevation_gain"), _activity['total_elevation_gain'])
+    elevation_percentile = _get_percentile_for(_details_df, pl.col("total_elevation_gain"),
+                                               _activity['total_elevation_gain'])
     efforts_percentile = get_efforts_statistics(_details_df, _activity['best_efforts'])
 
     return {
