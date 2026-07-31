@@ -1,6 +1,6 @@
 # strava-data-analyser
 
-![Powered by Strava](.meta/images/api_logo_pwrdBy_strava_horiz_white.png "logo")
+This project is now archived : Strava API now requires a subscription.
 
 Data analysis from Strava activities.
 
